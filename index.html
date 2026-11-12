@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Почта 44 гимназии</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --accent:#6366f1; --accent-hover:#4f46e5;
+  --accent-soft:#eef2ff; --accent-ring:rgba(99,102,241,.18);
+  --font-scale:1;
+  --bg:#f7f8fb; --bg-elev:#ffffff;
+  --text:#0f172a; --text-muted:#64748b; --text-subtle:#94a3b8;
+  --border:#e8eaee; --border-hover:#d1d5db;
+  --shadow-sm:0 1px 2px rgba(15,23,42,.04);
+  --shadow-md:0 4px 16px -4px rgba(15,23,42,.08),0 2px 6px -2px rgba(15,23,42,.04);
+  --shadow-lg:0 24px 48px -12px rgba(15,23,42,.14),0 8px 24px -8px rgba(15,23,42,.08);
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+html{font-size:calc(16px * var(--font-scale))}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:var(--bg); color:var(--text);
+  -webkit-font-smoothing:antialiased;
+  font-feature-settings:'cv11','ss01';
+  line-height:1.5; overflow-x:hidden;
+  transition:background .4s var(--ease),color .4s var(--ease);
+}
+button{font-family:inherit;cursor:pointer}
+input,textarea{font-family:inherit}
+
+.bg-mesh{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+.bg-mesh::before,.bg-mesh::after{content:'';position:absolute;border-radius:50%;filter:blur(120px);opacity:.3;transition:background .6s var(--ease)}
+.bg-mesh::before{width:640px;height:640px;background:var(--accent);top:-220px;left:-200px;animation:float1 22s ease-in-out infinite}
+.bg-mesh::after{width:520px;height:520px;background:var(--accent);bottom:-220px;right:-200px;opacity:.18;animation:float2 28s ease-in-out infinite}
+@keyframes float1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(110px,90px) scale(1.12)}}
+@keyframes float2{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-90px,-110px) scale(1.15)}}
+
+.ico{width:18px;height:18px;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.ico-sm{width:16px;height:16px}
+.ico-lg{width:22px;height:22px}
+
+.screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;visibility:hidden;transform:scale(.985);transition:opacity .45s var(--ease),visibility .45s,transform .45s var(--ease);z-index:1}
+.screen.active{opacity:1;visibility:visible;transform:scale(1);z-index:2}
+#mailScreen.screen{align-items:stretch;justify-content:stretch;padding:0}
+
+.auth-card{width:100%;max-width:420px;background:var(--bg-elev);border:1px solid var(--border);border-radius:20px;padding:2.5rem 2.25rem;box-shadow:var(--shadow-lg);animation:cardIn .7s var(--ease) both}
+@keyframes cardIn{from{opacity:0;transform:translateY(24px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+.auth-card > *{animation:fadeUp .55s var(--ease) both}
+.auth-card > *:nth-child(1){animation-delay:.05s}
+.auth-card > *:nth-child(2){animation-delay:.10s}
+.auth-card > *:nth-child(3){animation-delay:.14s}
+.auth-card > *:nth-child(4){animation-delay:.18s}
+.auth-card > *:nth-child(5){animation-delay:.22s}
+.auth-card > *:nth-child(6){animation-delay:.26s}
+.auth-card > *:nth-child(7){animation-delay:.30s}
+.auth-card > *:nth-child(8){animation-delay:.34s}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+.brand{display:flex;align-items:center;gap:12px;margin-bottom:1.75rem}
+.brand-mark{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,var(--accent),var(--accent-hover));display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 6px 18px -4px var(--accent-ring),0 2px 6px -2px var(--accent-ring);animation:breathe 4s ease-in-out infinite}
+@keyframes breathe{0%,100%{box-shadow:0 6px 18px -4px var(--accent-ring),0 2px 6px -2px var(--accent-ring)}50%{box-shadow:0 8px 26px -4px var(--accent-ring),0 3px 10px -2px var(--accent-ring)}}
+.brand-name{font-size:.95rem;font-weight:700;letter-spacing:-.01em}
+.brand-sub{font-size:.78rem;color:var(--text-muted);font-weight:500}
+
+.auth-title{font-size:1.65rem;font-weight:700;letter-spacing:-.025em;margin-bottom:.4rem}
+.auth-desc{font-size:.9rem;color:var(--text-muted);margin-bottom:1.75rem}
+
+.field{margin-bottom:1rem}
+.field label{display:block;font-size:.82rem;font-weight:500;color:#334155;margin-bottom:.45rem}
+.input-wrap{position:relative;display:flex;align-items:center}
+.input{width:100%;height:46px;padding:0 .95rem;background:var(--bg-elev);border:1px solid var(--border-hover);border-radius:11px;font-size:.92rem;color:var(--text);transition:border-color .18s var(--ease),box-shadow .18s var(--ease),background .2s}
+.input::placeholder{color:#a1a1aa}
+.input:hover{border-color:#b8bcc5}
+.input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-ring)}
+.input-wrap .input{padding-right:145px}
+.input-wrap .input[readonly]{background:#f8fafc;cursor:not-allowed;padding-right:.95rem}
+.input-suffix{position:absolute;right:.95rem;font-size:.8rem;color:var(--text-subtle);pointer-events:none;font-weight:500}
+
+.btn{width:100%;height:46px;border-radius:11px;font-size:.92rem;font-weight:600;border:none;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .18s var(--ease),transform .08s,box-shadow .25s var(--ease)}
+.btn-primary{background:#0f172a;color:#fff;box-shadow:var(--shadow-sm)}
+.btn-primary:hover{background:#1e293b;box-shadow:var(--shadow-md)}
+.btn-primary:active{transform:scale(.98)}
+.btn-accent{background:var(--accent);color:#fff;box-shadow:0 6px 16px -4px var(--accent-ring)}
+.btn-accent:hover{background:var(--accent-hover);box-shadow:0 8px 22px -4px var(--accent-ring)}
+.btn-accent:active{transform:scale(.98)}
+
+.msg{font-size:.82rem;color:#dc2626;margin-top:.7rem;text-align:center;min-height:1.1rem;font-weight:500}
+.auth-switch{text-align:center;margin-top:1.5rem;font-size:.85rem;color:var(--text-muted)}
+.auth-switch a{color:var(--accent);font-weight:600;text-decoration:none;cursor:pointer}
+.auth-switch a:hover{text-decoration:underline}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.shake{animation:shake .4s ease}
+
+#mailScreen{flex-direction:column;background:var(--bg-elev)}
+.topbar{height:64px;padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--bg-elev)}
+.topbar-left{display:flex;align-items:center;gap:.9rem}
+.topbar-right{display:flex;align-items:center;gap:.5rem}
+.user-chip{display:flex;align-items:center;gap:.55rem;padding:.3rem .85rem .3rem .3rem;border-radius:999px;background:#f1f5f9}
+.avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-hover));color:#fff;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.02em}
+.user-addr{font-size:.82rem;color:#334155;font-weight:500}
+.icon-btn{width:38px;height:38px;border-radius:10px;border:1px solid var(--border);background:var(--bg-elev);color:var(--text-muted);display:flex;align-items:center;justify-content:center;transition:.18s var(--ease)}
+.icon-btn:hover{background:#f8fafc;color:var(--text);border-color:var(--border-hover);transform:translateY(-1px)}
+
+.mail-body{display:flex;flex:1;overflow:hidden}
+.sidebar{width:236px;flex-shrink:0;border-right:1px solid var(--border);background:#fafbfc;padding:1rem .75rem;display:flex;flex-direction:column;gap:1.25rem}
+.compose-btn{width:100%;height:42px;border-radius:10px;background:#0f172a;color:#fff;border:none;font-size:.86rem;font-weight:600;display:flex;align-items:center;justify-content:center;gap:.5rem;transition:.18s var(--ease);box-shadow:var(--shadow-sm)}
+.compose-btn:hover{background:#1e293b;box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.compose-btn:active{transform:translateY(0)}
+
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav-label{font-size:.68rem;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.06em;padding:0 .6rem;margin-bottom:.4rem}
+.nav-item{display:flex;align-items:center;gap:.6rem;padding:.5rem .6rem;border-radius:8px;font-size:.85rem;color:#475569;font-weight:500;cursor:pointer;transition:.15s var(--ease);user-select:none}
+.nav-item:hover{background:#eef2f7;color:var(--text)}
+.nav-item.active{background:var(--accent-soft);color:var(--accent-hover);font-weight:600}
+.nav-badge{margin-left:auto;font-size:.68rem;padding:.1rem .45rem;border-radius:999px;background:#e2e8f0;color:#475569;font-weight:600;min-width:20px;text-align:center;transition:.2s}
+.nav-item.active .nav-badge{background:var(--accent);color:#fff}
+
+.content{flex:1;overflow-y:auto;background:var(--bg-elev);position:relative}
+.list-view{padding:1.25rem 1.5rem 2rem;animation:fadeUp .35s var(--ease)}
+.list-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:1rem}
+.list-title{font-size:1.15rem;font-weight:700;letter-spacing:-.015em}
+.list-count{font-size:.8rem;color:var(--text-subtle);font-weight:500}
+
+.mail-item{padding:.85rem 1rem;border-radius:11px;cursor:pointer;display:grid;grid-template-columns:1fr auto;gap:.25rem 1rem;transition:.15s var(--ease);margin-bottom:.35rem;border:1px solid transparent;animation:itemIn .35s var(--ease) both;position:relative;group:item}
+@keyframes itemIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.mail-item:hover{background:#f8fafc;border-color:var(--border)}
+.mail-item.unread{background:var(--accent-soft)}
+.mail-item.unread:hover{background:var(--accent-soft);border-color:var(--accent)}
+.mail-item .from-line{font-size:.82rem;font-weight:500;color:#475569;display:flex;align-items:center;gap:.5rem}
+.mail-item.unread .from-line{color:var(--accent-hover);font-weight:600}
+.unread-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px var(--accent-ring)}
+.mail-item .subject{font-size:.9rem;font-weight:500;color:var(--text);margin:.15rem 0}
+.mail-item .preview{font-size:.8rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;grid-column:1;max-width:100%}
+.mail-item .date{font-size:.72rem;color:var(--text-subtle);white-space:nowrap;font-weight:500;display:flex;align-items:center;gap:.4rem}
+
+/* Иконка удаления в списке */
+.list-delete-btn{
+  opacity:0; background:none; border:none; color:#ef4444;
+  padding:.3rem; border-radius:6px; transition:.15s var(--ease);
+  display:flex; align-items:center; justify-content:center;
+}
+.mail-item:hover .list-delete-btn{opacity:1}
+.list-delete-btn:hover{background:#fee2e2}
+
+.empty{text-align:center;padding:4rem 1rem;display:flex;flex-direction:column;align-items:center;gap:1rem;color:var(--text-subtle)}
+.empty-icon{width:64px;height:64px;border-radius:16px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;color:#94a3b8}
+.empty-text{font-size:.9rem;font-weight:500}
+
+.read-view{padding:1.5rem 1.75rem 2rem;animation:readIn .35s var(--ease)}
+@keyframes readIn{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}
+.read-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;gap:.75rem;flex-wrap:wrap}
+.toolbar-left{display:flex;align-items:center;gap:.5rem}
+.toolbar-right{display:flex;align-items:center;gap:.5rem}
+
+.back-btn{display:inline-flex;align-items:center;gap:.4rem;font-size:.82rem;color:var(--text-muted);font-weight:500;background:none;border:none;padding:.45rem .7rem;border-radius:8px;transition:.15s}
+.back-btn:hover{background:#f1f5f9;color:var(--text)}
+
+.reply-btn{display:inline-flex;align-items:center;gap:.5rem;font-size:.88rem;font-weight:600;background:var(--accent);color:#fff;border:none;padding:.7rem 1.2rem;border-radius:10px;box-shadow:0 4px 14px -2px var(--accent-ring);transition:.18s var(--ease)}
+.reply-btn:hover{background:var(--accent-hover);transform:translateY(-1px);box-shadow:0 8px 20px -2px var(--accent-ring)}
+.reply-btn:active{transform:translateY(0) scale(.98)}
+.reply-btn .ico{width:17px;height:17px}
+
+.delete-btn{
+  display:inline-flex;align-items:center;gap:.5rem;font-size:.88rem;font-weight:600;
+  background:#f1f5f9;color:#ef4444;border:none;padding:.7rem 1rem;border-radius:10px;
+  transition:.18s var(--ease);
+}
+.delete-btn:hover{background:#fee2e2;color:#dc2626}
+
+.reply-footer{margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border);display:flex;gap:.6rem}
+.reply-footer .reply-btn{flex:1;justify-content:center;padding:.9rem}
+.reply-footer .delete-btn{flex:0 0 auto;padding:.9rem 1.2rem}
+
+.read-head{border-bottom:1px solid var(--border);padding-bottom:1.1rem;margin-bottom:1.25rem}
+.read-subject{font-size:1.3rem;font-weight:700;letter-spacing:-.015em;margin-bottom:.9rem}
+.read-meta{display:flex;flex-direction:column;gap:.3rem;font-size:.82rem;color:var(--text-muted)}
+.read-meta b{color:#334155;font-weight:600}
+.read-body{font-size:.92rem;line-height:1.7;white-space:pre-wrap;color:#1e293b}
+
+.filter-badge{display:inline-flex;align-items:center;gap:.35rem;font-size:.72rem;font-weight:600;color:#059669;background:#ecfdf5;padding:.25rem .6rem;border-radius:999px;margin-left:.5rem;vertical-align:middle;}
+
+/* Статус прочитано */
+.status-read{color:#059669;font-weight:600;font-size:.78rem;display:flex;align-items:center;gap:.2rem}
+.status-sent{color:#94a3b8;font-weight:500;font-size:.78rem;display:flex;align-items:center;gap:.2rem}
+
+.modal{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(15,23,42,.5);backdrop-filter:blur(6px);opacity:0;visibility:hidden;transition:opacity .3s var(--ease),visibility .3s}
+.modal.show{opacity:1;visibility:visible}
+.modal-box{background:var(--bg-elev);border-radius:20px;padding:2rem 1.85rem;width:100%;max-width:440px;box-shadow:var(--shadow-lg);transform:scale(.95) translateY(12px);transition:transform .4s var(--ease);max-height:90vh;overflow-y:auto}
+.modal.show .modal-box{transform:scale(1) translateY(0)}
+.modal-title{font-size:1.2rem;font-weight:700;letter-spacing:-.02em;margin-bottom:.4rem;text-align:center}
+.modal-desc{font-size:.85rem;color:var(--text-muted);text-align:center;margin-bottom:1.5rem;line-height:1.55}
+
+.captcha-box{background:linear-gradient(135deg,#f8fafc,#f1f5f9);border:1px solid var(--border);border-radius:12px;padding:1.4rem;margin-bottom:1.25rem;text-align:center;position:relative;overflow:hidden}
+.captcha-box::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle at 20% 30%,rgba(99,102,241,.08),transparent 40%),radial-gradient(circle at 80% 70%,rgba(139,92,246,.08),transparent 40%);pointer-events:none}
+.captcha-label{font-size:.72rem;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.7rem}
+.captcha-code{font-family:'Courier New',monospace;font-size:2rem;font-weight:700;letter-spacing:.5em;color:var(--accent-hover);padding-left:.5em;user-select:none;position:relative;text-shadow:0 1px 0 rgba(255,255,255,.8),0 2px 4px var(--accent-ring)}
+
+.thanks-box{text-align:center}
+.thanks-ico{width:64px;height:64px;border-radius:50%;margin:0 auto 1.2rem;background:linear-gradient(135deg,#10b981,#059669);display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 12px 28px -8px rgba(16,185,129,.4);animation:pop .55s var(--ease)}
+@keyframes pop{0%{transform:scale(0);opacity:0}60%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+
+.close-x{position:absolute;top:1rem;right:1.25rem;font-size:1.5rem;line-height:1;color:var(--text-subtle);cursor:pointer;background:none;border:none;padding:.25rem;border-radius:6px;transition:.15s}
+.close-x:hover{color:var(--text);background:#f1f5f9}
+textarea.input{height:auto;padding:.8rem .95rem;resize:vertical;min-height:110px;line-height:1.55}
+
+.drawer{position:fixed;inset:0;z-index:200;pointer-events:none}
+.drawer.open{pointer-events:auto}
+.drawer-backdrop{position:absolute;inset:0;background:rgba(15,23,42,.4);backdrop-filter:blur(4px);opacity:0;transition:opacity .3s var(--ease)}
+.drawer.open .drawer-backdrop{opacity:1}
+.drawer-panel{position:absolute;top:0;right:0;bottom:0;width:380px;max-width:100%;background:var(--bg-elev);box-shadow:-24px 0 60px -12px rgba(15,23,42,.2);transform:translateX(100%);transition:transform .45s var(--ease);padding:1.75rem 1.6rem;overflow-y:auto}
+.drawer.open .drawer-panel{transform:translateX(0)}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.75rem}
+.drawer-title{font-size:1.15rem;font-weight:700;letter-spacing:-.02em}
+.setting-section{margin-bottom:2rem}
+.setting-label{font-size:.78rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.9rem}
+.color-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:.6rem}
+.color-swatch{aspect-ratio:1;border-radius:10px;cursor:pointer;position:relative;border:2px solid transparent;transition:.2s var(--ease)}
+.color-swatch:hover{transform:scale(1.08)}
+.color-swatch.active{border-color:var(--text);box-shadow:0 0 0 3px var(--bg-elev) inset}
+.color-swatch::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.3),transparent 60%);border-radius:inherit;pointer-events:none}
+.font-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem}
+.font-btn{padding:.75rem .5rem;border-radius:10px;border:1.5px solid var(--border);background:var(--bg-elev);color:var(--text);font-weight:600;font-size:.82rem;transition:.2s var(--ease);display:flex;flex-direction:column;align-items:center;gap:.3rem}
+.font-btn:hover{border-color:var(--accent);color:var(--accent)}
+.font-btn.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-hover)}
+.font-preview{font-weight:700;line-height:1}
+.font-btn[data-size="sm"] .font-preview{font-size:.85rem}
+.font-btn[data-size="md"] .font-preview{font-size:1.05rem}
+.font-btn[data-size="lg"] .font-preview{font-size:1.3rem}
+
+.toast{position:fixed;bottom:2rem;left:50%;transform:translate(-50%,20px);background:#0f172a;color:#fff;padding:.75rem 1.15rem;border-radius:12px;font-size:.85rem;font-weight:500;box-shadow:0 12px 32px -8px rgba(15,23,42,.4);opacity:0;pointer-events:none;transition:opacity .3s var(--ease),transform .3s var(--ease);z-index:1000;display:flex;align-items:center;gap:.6rem;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast.success{background:#059669}
+.toast.error{background:#dc2626}
+.toast.info{background:var(--accent-hover)}
+
+@media(max-width:768px){
+  .sidebar{width:64px;padding:.75rem .5rem}
+  .compose-btn{font-size:0;padding:0}
+  .compose-btn .ico{width:18px;height:18px}
+  .nav-item{justify-content:center;padding:.55rem 0;font-size:0;gap:0;position:relative}
+  .nav-item .ico{width:20px;height:20px}
+  .nav-badge{position:absolute;top:2px;right:6px;font-size:.6rem;padding:0 .3rem;min-width:14px;height:14px;line-height:14px}
+  .nav-label{display:none}
+  .user-addr{display:none}
+  .list-view,.read-view{padding:1rem}
+  .auth-card{padding:1.75rem 1.4rem}
+  .drawer-panel{width:100%}
+  .list-delete-btn{opacity:1} /* На мобилках всегда видно */
+}
+</style>
+</head>
+<body>
+<div class="bg-mesh"></div>
+
+<section id="regScreen" class="screen active">
+  <div class="auth-card">
+    <div class="brand">
+      <div class="brand-mark"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></div>
+      <div><div class="brand-name">Почта 44</div><div class="brand-sub">44gimnazia.com</div></div>
+    </div>
+    <h1 class="auth-title">Создайте аккаунт</h1>
+    <p class="auth-desc">Займёт меньше минуты</p>
+    <div class="field"><label>Логин</label><div class="input-wrap"><input class="input" id="regLogin" placeholder="wintrex" autocomplete="off"><span class="input-suffix">@44gimnazia.com</span></div></div>
+    <div class="field"><label>Пароль</label><input class="input" type="password" id="regPass" placeholder="Минимум 6 символов"></div>
+    <div class="field"><label>Повторите пароль</label><input class="input" type="password" id="regPass2" placeholder="Ещё раз"></div>
+    <button class="btn btn-primary" id="regBtn"><svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>Продолжить</button>
+    <div class="msg" id="regErr"></div>
+    <p class="auth-switch">Уже есть аккаунт? <a id="toLogin">Войти</a></p>
+  </div>
+</section>
+
+<section id="loginScreen" class="screen">
+  <div class="auth-card">
+    <div class="brand">
+      <div class="brand-mark"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></div>
+      <div><div class="brand-name">Почта 44</div><div class="brand-sub">44gimnazia.com</div></div>
+    </div>
+    <h1 class="auth-title">С возвращением</h1>
+    <p class="auth-desc">Войдите в свою почту</p>
+    <div class="field"><label>Логин</label><div class="input-wrap"><input class="input" id="logLogin" placeholder="wintrex" autocomplete="off"><span class="input-suffix">@44gimnazia.com</span></div></div>
+    <div class="field"><label>Пароль</label><input class="input" type="password" id="logPass" placeholder="••••••"></div>
+    <button class="btn btn-primary" id="logBtn"><svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>Войти</button>
+    <div class="msg" id="logErr"></div>
+    <p class="auth-switch">Нет аккаунта? <a id="toReg">Зарегистрироваться</a></p>
+  </div>
+</section>
+
+<section id="mailScreen" class="screen">
+  <header class="topbar">
+    <div class="topbar-left"><div class="user-chip"><div class="avatar" id="avatar"></div><div class="user-addr" id="userAddr"></div></div></div>
+    <div class="topbar-right">
+      <button class="icon-btn" id="settingsBtn" title="Настройки"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+      <button class="icon-btn" id="logoutBtn" title="Выйти"><svg class="ico" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></button>
+    </div>
+  </header>
+  <div class="mail-body">
+    <aside class="sidebar">
+      <button class="compose-btn" id="composeBtn"><svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg><span>Написать</span></button>
+      <nav class="nav">
+        <div class="nav-label">Папки</div>
+        <div class="nav-item active" data-folder="inbox"><svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M22 12h-6l-2 3h-4l-2-3H2M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z"/></svg><span>Входящие</span><span class="nav-badge" id="inboxBadge">0</span></div>
+        <div class="nav-item" data-folder="sent"><svg class="ico ico-sm" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg><span>Отправленные</span><span class="nav-badge" id="sentBadge">0</span></div>
+      </nav>
+    </aside>
+    <main class="content" id="content"></main>
+  </div>
+</section>
+
+<div class="drawer" id="settingsDrawer">
+  <div class="drawer-backdrop" id="settingsBackdrop"></div>
+  <aside class="drawer-panel">
+    <div class="drawer-head"><div class="drawer-title">Настройки</div><button class="icon-btn" id="settingsClose"><svg class="ico" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+    <div class="setting-section">
+      <div class="setting-label">Цвет темы</div>
+      <div class="color-grid" id="colorGrid">
+        <div class="color-swatch" data-color="indigo" style="background:#6366f1"></div>
+        <div class="color-swatch" data-color="violet" style="background:#8b5cf6"></div>
+        <div class="color-swatch" data-color="sky" style="background:#0ea5e9"></div>
+        <div class="color-swatch" data-color="emerald" style="background:#10b981"></div>
+        <div class="color-swatch" data-color="amber" style="background:#f59e0b"></div>
+        <div class="color-swatch" data-color="rose" style="background:#f43f5e"></div>
+      </div>
+    </div>
+    <div class="setting-section">
+      <div class="setting-label">Размер шрифта</div>
+      <div class="font-grid" id="fontGrid">
+        <button class="font-btn" data-size="sm"><span class="font-preview">A</span>Меньше</button>
+        <button class="font-btn" data-size="md"><span class="font-preview">A</span>Стандарт</button>
+        <button class="font-btn" data-size="lg"><span class="font-preview">A</span>Больше</button>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<div class="modal" id="captchaModal">
+  <div class="modal-box">
+    <h2 class="modal-title">Подтвердите, что вы не робот</h2>
+    <p class="modal-desc">Введите текст с картинки, чтобы продолжить</p>
+    <div class="captcha-box"><div class="captcha-label">Код</div><div class="captcha-code" id="captchaCode">ABCDE</div></div>
+    <div class="field"><input class="input" id="captchaInput" placeholder="Введите код" autocomplete="off" style="text-align:center;letter-spacing:.2em;text-transform:uppercase;font-weight:600"></div>
+    <button class="btn btn-accent" id="captchaConfirm">Подтвердить</button>
+    <div class="msg" id="captchaErr"></div>
+  </div>
+</div>
+
+<div class="modal" id="thanksModal">
+  <div class="modal-box thanks-box">
+    <div class="thanks-ico"><svg class="ico ico-lg" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
+    <h2 class="modal-title">Спасибо за регистрацию!</h2>
+    <p class="modal-desc" id="thanksText">Аккаунт создан</p>
+    <button class="btn btn-primary" id="thanksBtn">Войти</button>
+  </div>
+</div>
+
+<div class="modal" id="composeModal">
+  <div class="modal-box" style="position:relative">
+    <button class="close-x" id="composeClose">×</button>
+    <h2 class="modal-title" style="text-align:left;margin-bottom:1.25rem" id="composeTitle">Новое письмо</h2>
+    <div class="field"><label>Кому</label><div class="input-wrap"><input class="input" id="cTo" placeholder="friend" autocomplete="off"><span class="input-suffix">@44gimnazia.com</span></div></div>
+    <div class="field"><label>Тема</label><input class="input" id="cSubject" placeholder="Тема письма"></div>
+    <div class="field"><label>Сообщение</label><textarea class="input" id="cBody" placeholder="Текст письма..."></textarea></div>
+    <button class="btn btn-accent" id="cSend"><svg class="ico ico-sm" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>Отправить</button>
+    <div class="msg" id="cErr"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== STORAGE ===== */
+const KEY = { USERS:'p44_users', MSGS:'p44_msgs', SET:'p44_settings' };
+const DB = {
+  users:()=>JSON.parse(localStorage.getItem(KEY.USERS)||'{}'),
+  saveUsers:u=>localStorage.setItem(KEY.USERS,JSON.stringify(u)),
+  msgs:()=>JSON.parse(localStorage.getItem(KEY.MSGS)||'[]'),
+  saveMsgs:m=>localStorage.setItem(KEY.MSGS,JSON.stringify(m)),
+  get settings(){return JSON.parse(localStorage.getItem(KEY.SET)||'{"color":"indigo","size":"md"}')},
+  saveSettings:s=>localStorage.setItem(KEY.SET,JSON.stringify(s))
+};
+const hash = s => { let h=5381; for(let i=0;i<s.length;i++){h=((h<<5)+h)+s.charCodeAt(i);h|=0;} return 'h'+h; };
+
+/* ===== МЕГА-ФИЛЬТР МАТОВ ===== */
+function normalizeForFilter(text) {
+  return text.toLowerCase()
+    .replace(/[a@]/g, 'а').replace(/[b6]/g, 'б').replace(/[cс]/g, 'с')
+    .replace(/[eеё]/g, 'е').replace(/[hн]/g, 'н').replace(/[kк]/g, 'к')
+    .replace(/[mм]/g, 'м').replace(/[o0]/g, 'о').replace(/[pр]/g, 'р')
+    .replace(/[tт]/g, 'т').replace(/[xх]/g, 'х').replace(/[yу]/g, 'у')
+    .replace(/[3з]/g, 'з').replace(/[4ч]/g, 'ч').replace(/[1l|]/g, 'л')
+    .replace(/[9g]/g, 'д').replace(/[^а-яёa-z0-9]/g, '');
+}
+
+const SWAP_DICT = [
+  { p: /ху[йяеёию]/g, r: 'фиг' }, { p: /ху[её]в/g, r: 'фигов' }, { p: /хер/g, r: 'фиг' },
+  { p: /наху/g, r: 'нафиг' }, { p: /ниху/g, r: 'нифига' }, { p: /поху/g, r: 'пофиг' },
+  { p: /заху/g, r: 'зафиг' }, { p: /оху/g, r: 'офиг' }, { p: /пизд/g, r: 'неприятность' },
+  { p: /пзд/g, r: 'неприятность' }, { p: /бля[дт]?/g, r: 'блин' }, { p: /[её]б[аеёиу]/g, r: 'ого' },
+  { p: /уеб/g, r: 'уважаемый' }, { p: /заеб/g, r: 'замучил' }, { p: /наеб/g, r: 'обманул' },
+  { p: /выеб/g, r: 'выпендреж' }, { p: /отъеб/g, r: 'отстань' }, { p: /сук[аиуе]/g, r: 'собака' },
+  { p: /муд[ао]/g, r: 'чудак' }, { p: /пид[ао]р/g, r: 'друг' }, { p: /пед[ао]р/g, r: 'друг' },
+  { p: /гандон/g, r: 'баллон' }, { p: /долбо/g, r: 'недоразумение' }, { p: /шлюх/g, r: 'леди' },
+  { p: /шлюш/g, r: 'леди' }, { p: /мразь/g, r: 'бука' }, { p: /тварь/g, r: 'зверушка' },
+  { p: /гнид/g, r: 'козявка' }, { p: /залуп/g, r: 'закорючка' }, { p: /г[ао]вн/g, r: 'кашка' },
+  { p: /говён/g, r: 'кашка' }, { p: /дерьм/g, r: 'кашка' }, { p: /срак/g, r: 'попа' },
+  { p: /жоп/g, r: 'попа' }, { p: /манд[ао]/g, r: 'загадка' }, { p: /курв/g, r: 'леди' },
+  { p: /лох/g, r: 'простак' }, { p: /чмо/g, r: 'грустный' }, { p: /сволоч/g, r: 'вредина' },
+  { p: /скотин/g, r: 'зверушка' }, { p: /ублюд/g, r: 'незнакомец' }, { p: /вырод/g, r: 'уникум' },
+  { p: /дебил/g, r: 'чудак' }, { p: /идиот/g, r: 'чудак' }, { p: /кретин/g, r: 'чудак' },
+  { p: /даун/g, r: 'чудак' }, { p: /аутист/g, r: 'интроверт' },
+  { p: /fuck/g, r: 'hug' }, { p: /shit/g, r: 'candy' }, { p: /bitch/g, r: 'friend' },
+  { p: /cunt/g, r: 'flower' }, { p: /dick/g, r: 'stick' }, { p: /pussy/g, r: 'kitten' },
+  { p: /asshole/g, r: 'sunshine' }, { p: /bastard/g, r: 'buddy' }, { p: /whore/g, r: 'lady' },
+  { p: /slut/g, r: 'lady' }, { p: /fag/g, r: 'buddy' }, { p: /nigg[ae]/g, r: 'friend' }
+];
+
+function filterText(text) {
+  if (!text) return { text: '', changed: false };
+  let result = String(text), changed = false;
+  for (const item of SWAP_DICT) {
+    const regex = new RegExp('(^|[^а-яёa-z])(' + item.p.source + ')([^а-яёa-z]|$)', 'giu');
+    if (regex.test(result)) {
+      changed = true;
+      result = result.replace(regex, (match, p1, p2, p3) => p1 + item.r + p3);
+    }
+  }
+  return { text: result, changed };
+}
+
+function hasHiddenProfanity(text) {
+  const flat = normalizeForFilter(text);
+  for (const item of SWAP_DICT) {
+    const testRegex = new RegExp(item.p.source, 'i');
+    if (testRegex.test(flat)) return true;
+  }
+  return false;
+}
+
+function superFilter(text) {
+  if (!text) return { text: '', changed: false };
+  let result = String(text), changed = false;
+  const basic = filterText(result);
+  result = basic.text;
+  changed = basic.changed;
+  if (hasHiddenProfanity(result)) {
+    const words = result.split(/(\s+)/);
+    for (let i = 0; i < words.length; i++) {
+      if (hasHiddenProfanity(words[i])) {
+        words[i] = '[удалено]';
+        changed = true;
+      }
+    }
+    result = words.join('');
+  }
+  return { text: result, changed };
+}
+
+/* ===== THEME ===== */
+const COLORS = {
+  indigo:{a:'#6366f1',h:'#4f46e5',s:'#eef2ff',r:'rgba(99,102,241,.18)'},
+  violet:{a:'#8b5cf6',h:'#7c3aed',s:'#f5f3ff',r:'rgba(139,92,246,.18)'},
+  sky:{a:'#0ea5e9',h:'#0284c7',s:'#f0f9ff',r:'rgba(14,165,233,.18)'},
+  emerald:{a:'#10b981',h:'#059669',s:'#ecfdf5',r:'rgba(16,185,129,.18)'},
+  amber:{a:'#f59e0b',h:'#d97706',s:'#fffbeb',r:'rgba(245,158,11,.2)'},
+  rose:{a:'#f43f5e',h:'#e11d48',s:'#fff1f2',r:'rgba(244,63,94,.18)'}
+};
+const SIZES = { sm:0.875, md:1, lg:1.15 };
+
+function applyTheme(){
+  const s = DB.settings;
+  const c = COLORS[s.color] || COLORS.indigo;
+  const root = document.documentElement.style;
+  root.setProperty('--accent', c.a);
+  root.setProperty('--accent-hover', c.h);
+  root.setProperty('--accent-soft', c.s);
+  root.setProperty('--accent-ring', c.r);
+  root.setProperty('--font-scale', SIZES[s.size] || 1);
+  document.querySelectorAll('.color-swatch').forEach(el=>el.classList.toggle('active', el.dataset.color === s.color));
+  document.querySelectorAll('.font-btn').forEach(el=>el.classList.toggle('active', el.dataset.size === s.size));
+}
+applyTheme();
+
+/* ===== STATE ===== */
+let currentUser = null;
+let pendingReg = null;
+let currentFolder = 'inbox';
+let captchaText = '';
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function go(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); $(id).classList.add('active'); }
+function showModal(id){ $(id).classList.add('show'); }
+function hideModal(id){ $(id).classList.remove('show'); }
+function toast(msg, type='success'){
+  const t = $('toast'); t.textContent = msg;
+  t.className = 'toast show ' + type;
+  clearTimeout(t._t);
+  t._t = setTimeout(()=>t.classList.remove('show'), 3000);
+}
+function fullAddr(login){ return login + '@44gimnazia.com'; }
+function clearErrors(){ ['regErr','logErr','captchaErr','cErr'].forEach(i=>{ if($(i)) $(i).textContent=''; }); }
+
+/* ===== AUTH NAV ===== */
+$('toLogin').onclick = () => { clearErrors(); go('loginScreen'); };
+$('toReg').onclick = () => { clearErrors(); go('regScreen'); };
+
+/* ===== CAPTCHA ===== */
+function newCaptcha(){
+  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  captchaText = '';
+  for(let i=0;i<5;i++) captchaText += chars[Math.floor(Math.random()*chars.length)];
+  $('captchaCode').textContent = captchaText;
+  $('captchaInput').value = '';
+  $('captchaErr').textContent = '';
+}
+
+/* ===== REGISTER ===== */
+$('regBtn').onclick = () => {
+  clearErrors();
+  const login = $('regLogin').value.trim().toLowerCase();
+  const pass = $('regPass').value;
+  const pass2 = $('regPass2').value;
+  if(!login) return $('regErr').textContent = 'Придумайте логин';
+  if(!/^[a-z0-9_]{3,20}$/.test(login)) return $('regErr').textContent = 'Логин: 3–20 символов, только a-z, 0-9, _';
+  if(pass.length < 6) return $('regErr').textContent = 'Пароль минимум 6 символов';
+  if(pass !== pass2) return $('regErr').textContent = 'Пароли не совпадают';
+  const users = DB.users();
+  if(users[login]) return $('regErr').textContent = 'Логин занят, выберите другой';
+  pendingReg = { login, pass };
+  newCaptcha();
+  showModal('captchaModal');
+  setTimeout(()=>$('captchaInput').focus(), 300);
+};
+
+$('captchaInput').addEventListener('keydown', e => { if(e.key === 'Enter') $('captchaConfirm').click(); });
+
+$('captchaConfirm').onclick = () => {
+  const val = $('captchaInput').value.trim().toUpperCase();
+  if(!val) return $('captchaErr').textContent = 'Введите код';
+  if(val !== captchaText){
+    $('captchaErr').textContent = 'Неверный код, попробуйте ещё раз';
+    newCaptcha();
+    $('captchaInput').classList.add('shake');
+    setTimeout(()=>$('captchaInput').classList.remove('shake'), 400);
+    return;
+  }
+  const users = DB.users();
+  users[pendingReg.login] = { pass: hash(pendingReg.pass), created: Date.now() };
+  DB.saveUsers(users);
+  hideModal('captchaModal');
+  $('thanksText').textContent = 'Аккаунт ' + fullAddr(pendingReg.login) + ' создан';
+  showModal('thanksModal');
+  $('regLogin').value = ''; $('regPass').value = ''; $('regPass2').value = '';
+  pendingReg = null;
+};
+
+$('thanksBtn').onclick = () => { hideModal('thanksModal'); clearErrors(); go('loginScreen'); };
+
+/* ===== LOGIN ===== */
+$('logBtn').onclick = () => {
+  clearErrors();
+  const login = $('logLogin').value.trim().toLowerCase();
+  const pass = $('logPass').value;
+  if(!login) return $('logErr').textContent = 'Введите логин';
+  if(!pass) return $('logErr').textContent = 'Введите пароль';
+  const users = DB.users();
+  const u = users[login];
+  if(!u) return $('logErr').textContent = 'Аккаунт не найден';
+  if(u.pass !== hash(pass)) return $('logErr').textContent = 'Неверный пароль';
+  currentUser = login;
+  $('logLogin').value = ''; $('logPass').value = '';
+  enterMail();
+};
+
+$('logPass').addEventListener('keydown', e => { if(e.key === 'Enter') $('logBtn').click(); });
+
+/* ===== ENTER MAIL ===== */
+function enterMail(){
+  $('avatar').textContent = currentUser.slice(0, 2);
+  $('userAddr').textContent = fullAddr(currentUser);
+  currentFolder = 'inbox';
+  go('mailScreen');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.folder === 'inbox'));
+  renderList();
+  updateBadges();
+}
+
+$('logoutBtn').onclick = () => { currentUser = null; go('loginScreen'); clearErrors(); };
+
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.onclick = () => {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    item.classList.add('active');
+    currentFolder = item.dataset.folder;
+    renderList();
+  };
+});
+
+function updateBadges(){
+  const msgs = DB.msgs();
+  if(!currentUser){ $('inboxBadge').textContent = 0; $('sentBadge').textContent = 0; return; }
+  const unread = msgs.filter(m => m.to === currentUser && !m.read && !(m.deletedBy||[]).includes(currentUser)).length;
+  const sent = msgs.filter(m => m.from === currentUser && !(m.deletedBy||[]).includes(currentUser)).length;
+  $('inboxBadge').textContent = unread || '';
+  $('sentBadge').textContent = sent || '';
+}
+
+/* ===== УДАЛЕНИЕ ПИСЕМ ===== */
+function deleteMessage(id, fromView = false){
+  if(!confirm('Удалить это письмо? (у собеседника оно останется)')) return;
+  const msgs = DB.msgs();
+  const m = msgs.find(x => x.id === id);
+  if(!m) return;
+  if(!m.deletedBy) m.deletedBy = [];
+  if(!m.deletedBy.includes(currentUser)) {
+    m.deletedBy.push(currentUser);
+    DB.saveMsgs(msgs);
+    toast('Письмо удалено');
+    if(fromView) renderList();
+    else renderList();
+    updateBadges();
+  }
+}
+
+/* ===== RENDER LIST ===== */
+function renderList(){
+  const msgs = DB.msgs();
+  const mine = msgs
+    .filter(m => !(m.deletedBy || []).includes(currentUser)) // Скрываем удаленные
+    .filter(m => currentFolder === 'inbox' ? m.to === currentUser : m.from === currentUser)
+    .sort((a, b) => b.date - a.date);
+  
+  const title = currentFolder === 'inbox' ? 'Входящие' : 'Отправленные';
+  const content = $('content');
+
+  if(!mine.length){
+    content.innerHTML = `
+      <div class="list-view">
+        <div class="list-head"><h2 class="list-title">${title}</h2></div>
+        <div class="empty">
+          <div class="empty-icon"><svg class="ico ico-lg" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></div>
+          <div class="empty-text">Пока пусто</div>
+        </div>
+      </div>`;
+    updateBadges();
+    return;
+  }
+
+  const html = mine.map((m, i) => {
+    const unread = currentFolder === 'inbox' && !m.read;
+    const who = currentFolder === 'inbox' ? fullAddr(m.from) : 'Кому: ' + fullAddr(m.to);
+    
+    // Фильтрация для списка
+    const fSub = superFilter(m.subject);
+    const fBody = superFilter(m.body);
+
+    // Статус для отправленных
+    let statusHtml = '';
+    if (currentFolder === 'sent') {
+        statusHtml = m.read 
+            ? `<span class="status-read"><svg class="ico" style="width:12px;height:12px;stroke-width:3" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg> Прочитано</span>` 
+            : `<span class="status-sent"><svg class="ico" style="width:12px;height:12px;stroke-width:3" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg> Отправлено</span>`;
+    }
+
+    return `
+      <div class="mail-item ${unread ? 'unread' : ''}" data-id="${m.id}" style="animation-delay:${i*0.04}s">
+        <div class="from-line">${unread ? '<span class="unread-dot"></span>' : ''}<span>${esc(who)}</span></div>
+        <div class="date">
+            ${statusHtml}
+            <span>${formatDate(m.date)}</span>
+            <button class="list-delete-btn" data-del="${m.id}" title="Удалить">
+                <svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"/></svg>
+            </button>
+        </div>
+        <div class="subject">${esc(fSub.text)}</div>
+        <div class="preview">${esc(fBody.text.slice(0, 100))}</div>
+      </div>`;
+  }).join('');
+
+  content.innerHTML = `
+    <div class="list-view">
+      <div class="list-head"><h2 class="list-title">${title}</h2><span class="list-count">${mine.length} ${plural(mine.length, 'письмо', 'письма', 'писем')}</span></div>
+      ${html}
+    </div>`;
+
+  content.querySelectorAll('.mail-item').forEach(el => {
+    el.addEventListener('click', (e) => {
+        // Если кликнули на кнопку удаления, не открываем письмо
+        if(e.target.closest('.list-delete-btn')) return;
+        openMessage(el.dataset.id);
+    });
+  });
+
+  // Обработчики для кнопок удаления в списке
+  content.querySelectorAll('.list-delete-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+          e.stopPropagation(); // Останавливаем всплытие, чтобы не открылось письмо
+          deleteMessage(btn.dataset.del, false);
+      });
+  });
+
+  updateBadges();
+}
+
+function plural(n, one, few, many){
+  const m = n % 100, d = n % 10;
+  if(m > 10 && m < 20) return many;
+  if(d === 1) return one;
+  if(d >= 2 && d <= 4) return few;
+  return many;
+}
+
+function formatDate(ts){
+  const d = new Date(ts);
+  const now = new Date();
+  const diff = (now - d) / 1000 / 60;
+  if(diff < 1) return 'только что';
+  if(diff < 60) return Math.floor(diff) + ' мин назад';
+  if(diff < 60*24 && d.getDate() === now.getDate()) return d.toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'});
+  return d.toLocaleDateString('ru-RU', {day:'numeric', month:'short'});
+}
+
+/* ===== OPEN MESSAGE ===== */
+function openMessage(id){
+  const msgs = DB.msgs();
+  const m = msgs.find(x => x.id === id);
+  if(!m) return;
+
+  if(currentFolder === 'inbox' && !m.read){
+    m.read = true;
+    DB.saveMsgs(msgs);
+    // Автообновление, если открыто в другой вкладке
+    window.dispatchEvent(new Event('storage'));
+  }
+
+  const replyTo = (m.to === currentUser) ? m.from : m.to;
+  const isIncoming = (m.to === currentUser);
+  const replyLabel = isIncoming ? 'Ответить' : 'Написать снова';
+
+  const fSub = superFilter(m.subject);
+  const fBody = superFilter(m.body);
+  const wasFiltered = fSub.changed || fBody.changed;
+
+  const filteredBadge = wasFiltered ? '<span class="filter-badge"><svg class="ico ico-sm" viewBox="0 0 24 24" style="width:12px;height:12px"><path d="M20 6 9 17l-5-5"/></svg>отфильтровано</span>' : '';
+
+  // Статус прочитано (для отправленных)
+  let readStatusHtml = '';
+  if (currentFolder === 'sent') {
+      readStatusHtml = `<div><b>Статус:</b> ${m.read ? '<span style="color:#059669;font-weight:600">Прочитано</span>' : '<span style="color:#94a3b8">Отправлено</span>'}</div>`;
+  }
+
+  const content = $('content');
+  content.innerHTML = `
+    <div class="read-view">
+      <div class="read-toolbar">
+        <div class="toolbar-left">
+            <button class="back-btn" id="backBtn">
+            <svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Назад
+            </button>
+        </div>
+        <div class="toolbar-right">
+            <button class="reply-btn" id="replyBtnTop">
+            <svg class="ico" viewBox="0 0 24 24"><path d="M9 17l-5-5 5-5M4 12h11a4 4 0 0 1 4 4v3"/></svg>
+            ${replyLabel}
+            </button>
+            <button class="delete-btn" id="deleteBtnTop" title="Удалить">
+            <svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"/></svg>
+            </button>
+        </div>
+      </div>
+      <div class="read-head">
+        <h1 class="read-subject">${esc(fSub.text)}${filteredBadge}</h1>
+        <div class="read-meta">
+          <div><b>От:</b> ${esc(fullAddr(m.from))}</div>
+          <div><b>Кому:</b> ${esc(fullAddr(m.to))}</div>
+          <div><b>Дата:</b> ${new Date(m.date).toLocaleString('ru-RU')}</div>
+          ${readStatusHtml}
+        </div>
+      </div>
+      <div class="read-body">${esc(fBody.text)}</div>
+      <div class="reply-footer">
+        <button class="reply-btn" id="replyBtnBottom">
+          <svg class="ico" viewBox="0 0 24 24"><path d="M9 17l-5-5 5-5M4 12h11a4 4 0 0 1 4 4v3"/></svg>
+          ${replyLabel}
+        </button>
+        <button class="delete-btn" id="deleteBtnBottom">
+            <svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"/></svg>
+            Удалить
+        </button>
+      </div>
+    </div>`;
+
+  const backBtn = $('backBtn');
+  if(backBtn) backBtn.addEventListener('click', renderList);
+
+  const doReply = () => {
+    const cleanSubject = fSub.text.replace(/^Re:\s*/i, '');
+    const quotedBody = '\n\n— — —\nЦитата письма от ' + new Date(m.date).toLocaleString('ru-RU') + ':\n' +
+      fBody.text.split('\n').map(l => '> ' + l).join('\n');
+    openCompose({
+      to: replyTo,
+      subject: 'Re: ' + cleanSubject,
+      body: quotedBody
+    });
+  };
+
+  const btnTop = $('replyBtnTop');
+  const btnBottom = $('replyBtnBottom');
+  if(btnTop) btnTop.addEventListener('click', doReply);
+  if(btnBottom) btnBottom.addEventListener('click', doReply);
+
+  // Кнопки удаления
+  const delTop = $('deleteBtnTop');
+  const delBottom = $('deleteBtnBottom');
+  if(delTop) delTop.addEventListener('click', () => deleteMessage(id, true));
+  if(delBottom) delBottom.addEventListener('click', () => deleteMessage(id, true));
+
+  updateBadges();
+}
+
+/* ===== COMPOSE ===== */
+function openCompose(prefill){
+  $('cErr').textContent = '';
+  const toInput = $('cTo');
+  if(prefill && prefill.to){
+    toInput.value = prefill.to;
+    toInput.setAttribute('readonly', 'readonly');
+    $('composeTitle').textContent = 'Ответ на письмо';
+  } else {
+    toInput.value = '';
+    toInput.removeAttribute('readonly');
+    $('composeTitle').textContent = 'Новое письмо';
+  }
+  $('cSubject').value = (prefill && prefill.subject) || '';
+  $('cBody').value = (prefill && prefill.body) || '';
+  showModal('composeModal');
+  setTimeout(() => {
+    if(prefill && prefill.to){
+      const body = $('cBody');
+      body.focus();
+      body.setSelectionRange(0, 0);
+      body.scrollTop = 0;
+    } else {
+      $('cTo').focus();
+    }
+  }, 300);
+}
+
+$('composeBtn').onclick = () => openCompose(null);
+$('composeClose').onclick = () => hideModal('composeModal');
+
+/* ===== SEND ===== */
+$('cSend').onclick = () => {
+  $('cErr').textContent = '';
+  const to = $('cTo').value.trim().toLowerCase();
+  const rawSubject = $('cSubject').value.trim();
+  const rawBody = $('cBody').value.trim();
+
+  if(!to) return $('cErr').textContent = 'Укажите получателя';
+  if(!/^[a-z0-9_]{3,20}$/.test(to)) return $('cErr').textContent = 'Некорректный логин';
+  if(to === currentUser) return $('cErr').textContent = 'Нельзя отправить себе';
+  if(!DB.users()[to]) return $('cErr').textContent = 'Пользователь не найден';
+  if(!rawSubject) return $('cErr').textContent = 'Введите тему';
+  if(!rawBody) return $('cErr').textContent = 'Введите текст';
+
+  const fSub = superFilter(rawSubject);
+  const fBody = superFilter(rawBody);
+  const wasFiltered = fSub.changed || fBody.changed;
+
+  const msgs = DB.msgs();
+  msgs.push({
+    id: 'm' + Date.now() + Math.random().toString(36).slice(2, 6),
+    from: currentUser, to,
+    subject: fSub.text,
+    body: fBody.text,
+    date: Date.now(), read: false, deletedBy: []
+  });
+  DB.saveMsgs(msgs);
+  hideModal('composeModal');
+
+  if(wasFiltered){
+    toast('Письмо отправлено. Некоторые слова были заменены на вежливые', 'info');
+  } else {
+    toast('Письмо отправлено на ' + fullAddr(to));
+  }
+  if(currentFolder === 'sent') renderList();
+  updateBadges();
+};
+
+/* ===== SETTINGS ===== */
+$('settingsBtn').onclick = () => $('settingsDrawer').classList.add('open');
+$('settingsClose').onclick = () => $('settingsDrawer').classList.remove('open');
+$('settingsBackdrop').onclick = () => $('settingsDrawer').classList.remove('open');
+
+document.querySelectorAll('.color-swatch').forEach(el => {
+  el.onclick = () => {
+    const s = DB.settings; s.color = el.dataset.color; DB.saveSettings(s);
+    applyTheme();
+    toast('Тема: ' + ({indigo:'Индиго',violet:'Фиолетовый',sky:'Небесный',emerald:'Изумруд',amber:'Янтарь',rose:'Роза'}[el.dataset.color]));
+  };
+});
+document.querySelectorAll('.font-btn').forEach(el => {
+  el.onclick = () => {
+    const s = DB.settings; s.size = el.dataset.size; DB.saveSettings(s);
+    applyTheme();
+    toast('Размер шрифта обновлён');
+  };
+});
+
+/* ===== START ===== */
+applyTheme();
+go('loginScreen');
+
+// Автообновление при изменении localStorage (если открыто две вкладки)
+window.addEventListener('storage', (e) => {
+  if(e.key === 'p44_msgs' && currentUser) {
+    renderList();
+    updateBadges();
+    // Если открыто письмо, обновляем его статус
+    const openMail = document.querySelector('.read-view');
+    if(openMail) {
+        // Находим ID открытого письма (можно вытащить из кнопки удаления или хедера, но проще просто перерендерить, если мы не в списке)
+        // Для простоты просто обновим список, если открыто, пользователь сам обновит
+    }
+  }
+});
+</script>
+</body>
+</html>
